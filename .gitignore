@@ -1,4 +1,7 @@
 Beaglebone-linux/
 Beaglebone-u-boot/
+rootfs/
+toolchain/
+output/
 build_uboot.log
 build_linux.log
