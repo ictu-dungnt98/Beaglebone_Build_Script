@@ -499,6 +499,9 @@ if [ "${1}" = "burn_tf" ]; then
 	sudo cp ${temp_root_dir}/${u_boot_boot_cmd_file} ${temp_root_dir}/output/p1/ &&\
 	echo "--->p1 done~"
 	sudo cp -rf ${temp_root_dir}/${rootfs_dir}/rootfs/* ${temp_root_dir}/output/p2/ &&\
+	sudo cp -rf /home/dungnt98/Device-Driver-Linux/trainning_driver/SPI-protocol/SPI_Multiple_Slave/driver/lcd_driver.ko ${temp_root_dir}/output/p2/ &&\
+	sudo cp -rf /home/dungnt98/Device-Driver-Linux/trainning_driver/SPI-protocol/SPI_Multiple_Slave/test1/test1 ${temp_root_dir}/output/p2/ &&\
+	sudo cp -rf /home/dungnt98/Device-Driver-Linux/trainning_driver/SPI-protocol/SPI_Multiple_Slave/test1/test2 ${temp_root_dir}/output/p2/ &&\
 	echo "--->p2 done~"
 
 	echo "--->The tf card image-packing task done~"
