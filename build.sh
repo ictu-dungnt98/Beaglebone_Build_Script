@@ -324,10 +324,7 @@ pack_tf_normal_size_img(){
 
 	# create partition for image
 	echo  "--->creating partitions for tf image ..."
-	cat <<EOT |sudo  sfdisk $_IMG_FILE
-1M,${_P1_SIZE}M,c
-,,L
-EOT
+	sudo fdisk $_LOOP_DEV < ${temp_root_dir}/part2.txt
 	sleep 2
 	sudo partx -u $_LOOP_DEV # update partition table
 	sudo mkfs.vfat -F32 ${_LOOP_DEV}p1 ||exit
@@ -440,7 +437,7 @@ if [ "${1}" = "build_tf" ]; then
 	u_boot_config_file="am335x_boneblack_vboot_defconfig"
 
 	build
-	# pack_tf_normal_size_img
+	pack_tf_normal_size_img
 fi
 
 if [ "${1}" = "pack_tf" ]; then
@@ -499,9 +496,8 @@ if [ "${1}" = "burn_tf" ]; then
 	sudo cp ${temp_root_dir}/${u_boot_boot_cmd_file} ${temp_root_dir}/output/p1/ &&\
 	echo "--->p1 done~"
 	sudo cp -rf ${temp_root_dir}/${rootfs_dir}/rootfs/* ${temp_root_dir}/output/p2/ &&\
-	sudo cp -rf /home/dungnt98/Device-Driver-Linux/trainning_driver/SPI-protocol/SPI_Multiple_Slave/driver/lcd_driver.ko ${temp_root_dir}/output/p2/ &&\
-	sudo cp -rf /home/dungnt98/Device-Driver-Linux/trainning_driver/SPI-protocol/SPI_Multiple_Slave/test1/test1 ${temp_root_dir}/output/p2/ &&\
-	sudo cp -rf /home/dungnt98/Device-Driver-Linux/trainning_driver/SPI-protocol/SPI_Multiple_Slave/test1/test2 ${temp_root_dir}/output/p2/ &&\
+	sudo cp -rf ${temp_root_dir}/spi_driver/lcd_driver.ko ${temp_root_dir}/output/p2/ &&\
+	sudo cp -rf ${temp_root_dir}/spi_driver/test1/test1 ${temp_root_dir}/output/p2/ &&\
 	echo "--->p2 done~"
 
 	echo "--->The tf card image-packing task done~"
