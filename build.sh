@@ -247,6 +247,7 @@ build_linux(){
 #copy=========================================================
 copy_uboot(){
 	cp ${temp_root_dir}/${u_boot_dir}/${uboot_file} ${temp_root_dir}/output/
+	cp ${temp_root_dir}/${u_boot_dir}/${mlo_file} ${temp_root_dir}/output/
 }
 copy_linux(){
 	cp ${temp_root_dir}/${linux_dir}/arch/arm/boot/${linux_file} ${temp_root_dir}/output/
@@ -288,10 +289,10 @@ pack_tf_normal_size_img(){
 	_ROOTFS_SIZE=`gzip -l $_ROOTFS_FILE | sed -n '2p' | awk '{print $2}'`
 	_ROOTFS_SIZE=`echo "scale=3;$_ROOTFS_SIZE/1024/1024" | bc`
 
-	_UBOOT_SIZE=1
 	_CFG_SIZEKB=0
-	_P1_SIZE=16
-	_IMG_SIZE=200
+	_UBOOT_SIZE=1
+	_P1_SIZE=500 #MB
+	_IMG_SIZE=4000 #MB
 
 	_MIN_SIZE=`echo "scale=3;$_UBOOT_SIZE+$_P1_SIZE+$_ROOTFS_SIZE+$_CFG_SIZEKB/1024" | bc` #+$_OVERLAY_SIZE
 	_MIN_SIZE=$(echo "$_MIN_SIZE" | bc)
@@ -320,17 +321,17 @@ pack_tf_normal_size_img(){
 		echo  "dd img --> $_LOOP_DEV error!"
 		sudo losetup -d $_LOOP_DEV >/dev/null 2>&1 && exit
 	fi
+
+	# create partition for image
 	echo  "--->creating partitions for tf image ..."
-	# size only can be integer
 	cat <<EOT |sudo  sfdisk $_IMG_FILE
-${_UBOOT_SIZE}M,${_P1_SIZE}M,c
+1M,${_P1_SIZE}M,c
 ,,L
 EOT
-
 	sleep 2
-	sudo partx -u $_LOOP_DEV
-	sudo mkfs.vfat ${_LOOP_DEV}p1 ||exit
-	sudo mkfs.ext4 ${_LOOP_DEV}p2 ||exit
+	sudo partx -u $_LOOP_DEV # update partition table
+	sudo mkfs.vfat -F32 ${_LOOP_DEV}p1 ||exit
+	sudo mkfs.ext4 -F ${_LOOP_DEV}p2 ||exit
 	if [ $? -ne 0 ]
 	then
 		echo  "error in creating partitions"
@@ -346,11 +347,13 @@ EOT
 	_KERNEL_FILE=${temp_root_dir}/output/${linux_file}
 	_DTB_FILE=${temp_root_dir}/output/${dtb_file}
 	_UBOOT_FILE=${temp_root_dir}/output/${uboot_file}
+	_MLO_FILE=${temp_root_dir}/output/${mlo_file}
 
 	# do pack image
 	echo  "--->copy uboot, linux and rootfs files..."
 	sudo rm -rf  ${temp_root_dir}/output/p1/* && sudo rm -rf ${temp_root_dir}/output/p2/*
 	sudo cp $_UBOOT_FILE ${temp_root_dir}/output/p1/ &&\
+	sudo cp $_MLO_FILE ${temp_root_dir}/output/p1/ &&\
 	sudo cp $_KERNEL_FILE ${temp_root_dir}/output/p1/ &&\
 	sudo cp $_DTB_FILE ${temp_root_dir}/output/p1/ &&\
 	sudo cp ${temp_root_dir}/${u_boot_boot_cmd_file} ${temp_root_dir}/output/p1/ &&\
@@ -437,7 +440,7 @@ if [ "${1}" = "build_tf" ]; then
 	u_boot_config_file="am335x_boneblack_vboot_defconfig"
 
 	build
-	pack_tf_normal_size_img
+	# pack_tf_normal_size_img
 fi
 
 if [ "${1}" = "pack_tf" ]; then
@@ -465,21 +468,51 @@ if [ "${1}" = "burn_tf" ]; then
 	echo "umounting sdcard..."
 	SDCARD="/dev/sda"
 	umount_all
+
 	echo "deleting all partitions..."
 	sudo wipefs -a -f $SDCARD
-
 	sudo dd if=/dev/zero of=$SDCARD bs=1M count=1
+	
 	echo "creating partitions..."
-	sudo fdisk $SDCARD < part.txt
+	sudo fdisk $SDCARD < part2.txt
 	echo "formating partitions..."
-	# sudo mkfs.vfat -F32 ${SDCARD}1
-	# sudo mkfs.ext4 -F ${SDCARD}2
-	sudo mkfs.ext4 -F ${SDCARD}1
+	sudo mkfs.vfat -F32 ${SDCARD}1
+	sudo mkfs.ext4 -F ${SDCARD}2
 
-	sudo dd if=${_IMG_FILE} of=/dev/sda bs=1M conv=notrunc
+	mkdir -p ${temp_root_dir}/output/p1 >/dev/null 2>&1
+	mkdir -p ${temp_root_dir}/output/p2 > /dev/null 2>&1
+	sudo mount ${SDCARD}1 ${temp_root_dir}/output/p1
+	sudo mount ${SDCARD}2 ${temp_root_dir}/output/p2
+
+	_KERNEL_FILE=${temp_root_dir}/output/${linux_file}
+	_DTB_FILE=${temp_root_dir}/output/${dtb_file}
+	_UBOOT_FILE=${temp_root_dir}/output/${uboot_file}
+	_MLO_FILE=${temp_root_dir}/output/${mlo_file}
+
+	# do pack image
+	echo  "--->copy uboot, linux and rootfs files..."
+	sudo rm -rf  ${temp_root_dir}/output/p1/* && sudo rm -rf ${temp_root_dir}/output/p2/*
+	sudo cp $_UBOOT_FILE ${temp_root_dir}/output/p1/ &&\
+	sudo cp $_MLO_FILE ${temp_root_dir}/output/p1/ &&\
+	sudo cp $_KERNEL_FILE ${temp_root_dir}/output/p1/ &&\
+	sudo cp $_DTB_FILE ${temp_root_dir}/output/p1/ &&\
+	sudo cp ${temp_root_dir}/${u_boot_boot_cmd_file} ${temp_root_dir}/output/p1/ &&\
+	echo "--->p1 done~"
+	sudo cp -rf ${temp_root_dir}/${rootfs_dir}/rootfs/* ${temp_root_dir}/output/p2/ &&\
+	echo "--->p2 done~"
+
+	echo "--->The tf card image-packing task done~"
 	sudo sync
-fi
+	sleep 2
+	sudo umount ${temp_root_dir}/output/p1 ${temp_root_dir}/output/p2
+	if [ $? -ne 0 ]; then
+		echo  "umount or losetup -d error!!"
+		exit
+	fi
 
 sleep 1
 echo "Done!"
+
+fi
+
 
