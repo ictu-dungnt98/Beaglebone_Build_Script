@@ -14,11 +14,12 @@ void gpio_export(char* gpio)
 
 	fd = open("/sys/class/gpio/export", O_WRONLY);
 	if (fd < 0) {
-		perror("gpio/export");
+		printf("gpio/export: %s\n", strerror(errno));
 		exit(1);
 	}
+	printf("export gpio %s fd: %d\n", gpio, fd);
 
-	if (write(fd, gpio, strlen(gpio) < 0)) {
+	if (write(fd, gpio, strlen(gpio)) < 0) {
 		printf("Failed to export GPIO: %s\n", strerror(errno));
 	}
 

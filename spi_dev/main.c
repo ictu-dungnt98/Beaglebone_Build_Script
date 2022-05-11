@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     char c;
 
 	spi_init(argc, argv);
+ 	lcd_init(&lcd, 0x38);
  
     while (1) {
         printf("0: Exit\n");
@@ -29,8 +30,6 @@ int main(int argc, char *argv[])
         printf("3; Linux Embedded\n");
 
         scanf("%d", &c);
-
-		lcd_init(&lcd, 0x38);
 
         switch (c) {
             case 0:

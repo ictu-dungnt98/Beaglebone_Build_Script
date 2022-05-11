@@ -6,7 +6,7 @@ OBJECTS = $(SOURCES:.c=.o)
 
 TARGET = spi_dev
 
-CC := /home/dungnt98/BBB_build_system/toolchain/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc
+CC := /home/dungnt98/Beaglebone_Build_Script/toolchain/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc
 
 all: $(OBJECTS)
 	$(CC) -o $(TARGET) $(OBJECTS)
