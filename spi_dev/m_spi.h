@@ -7,7 +7,6 @@
 
 int spi_init(int argc, char *argv[]);
 void spi_deinit();
-void spi_transfer(uint8_t const *tx, uint8_t const *rx, int len);
-void spi_write(uint8_t const *tx, int len);
+void spi_write(uint8_t *tx, int len);
 
 #endif

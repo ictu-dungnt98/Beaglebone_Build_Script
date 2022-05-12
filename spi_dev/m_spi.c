@@ -207,39 +207,29 @@ void spi_deinit()
 	close(fd);
 }
 
-void spi_transfer(uint8_t const *tx, uint8_t const *rx, int len)
-{
-	int ret;
-	struct spi_ioc_transfer tr = {
-		.tx_buf = (unsigned long)tx,
-		.rx_buf = (unsigned long)rx,
-		.len = len,
-		.delay_usecs = delay,
-		.speed_hz = speed,
-		.bits_per_word = bits,
-	};
+static void spi_transfer(uint8_t *data, int length) {
+	struct spi_ioc_transfer spi[length];
+	int i;
 
-	if (mode & SPI_TX_QUAD)
-		tr.tx_nbits = 4;
-	else if (mode & SPI_TX_DUAL)
-		tr.tx_nbits = 2;
-	if (mode & SPI_RX_QUAD)
-		tr.rx_nbits = 4;
-	else if (mode & SPI_RX_DUAL)
-		tr.rx_nbits = 2;
-	if (!(mode & SPI_LOOP)) {
-		if (mode & (SPI_TX_QUAD | SPI_TX_DUAL))
-			tr.rx_buf = 0;
-		else if (mode & (SPI_RX_QUAD | SPI_RX_DUAL))
-			tr.tx_buf = 0;
+	/* Setup transfer struct */
+	for (i=0; i<length; i++) {
+		memset(&spi[i], 0, sizeof(struct spi_ioc_transfer));
+		spi[i].tx_buf = (unsigned long) (data+i);
+		spi[i].rx_buf = (unsigned long) (data+i);
+		spi[i].len = 1;
+		spi[i].speed_hz = speed;
+		spi[i].bits_per_word = bits;
 	}
 
-	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-	if (ret < 1)
-		pabort("can't send spi message");
+	/* Let's do the transfer */
+	if(ioctl(fd, SPI_IOC_MESSAGE(length), spi) < 0) {
+		perror("Error transfering data over SPI bus");
+		close(fd);
+		exit(-1);
+	}
 }
 
-void spi_write(uint8_t const *tx, int len)
+void spi_write(uint8_t *tx, int len)
 {
-	spi_transfer(tx, NULL, len);
+	spi_transfer(tx, len);
 }
