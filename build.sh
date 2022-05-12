@@ -38,15 +38,12 @@ pull_uboot(){
 		echo "u-boot dir is exist"
 	else
 		# rm -rf ${temp_root_dir}/${u_boot_dir} &&\
-		mkdir -p ${temp_root_dir}/${u_boot_dir} &&\
-		cd ${temp_root_dir}/${u_boot_dir} &&\
-		git clone git://git.denx.de/u-boot.git u-boot/
-		if [ ! -d ${temp_root_dir}/${u_boot_dir}/u-boot ]; then
+		cd ${temp_root_dir}/ &&\
+		git clone git://git.denx.de/u-boot.git ${u_boot_dir}
+		if [ ! -d ${temp_root_dir}/${u_boot_dir} ]; then
 			echo "Error:pull u_boot failed"
 				exit 0
 		else
-			mv ${temp_root_dir}/${u_boot_dir}/u-boot/* ${temp_root_dir}/${u_boot_dir}/
-			rm -rf ${temp_root_dir}/${u_boot_dir}/u-boot
 			echo "pull u-boot ok"
 		fi
 	fi
@@ -57,16 +54,13 @@ pull_linux(){
 		echo "u-boot dir is exist"
 	else
 		# rm -rf ${temp_root_dir}/${linux_dir} &&\
-		mkdir -p ${temp_root_dir}/${linux_dir} &&\
 		cd ${temp_root_dir}/${linux_dir} &&\
-		git clone -b 4.14 https://github.com/beagleboard/linux.git
+		git clone -b 4.14 https://github.com/beagleboard/linux.git ${linux_dir}
 
-		if [ ! -d ${temp_root_dir}/${linux_dir}/linux ]; then
+		if [ ! -d ${temp_root_dir}/${linux_dir} ]; then
 			echo "Error:pull linux failed"
 				exit 0
 		else
-			mv ${temp_root_dir}/${linux_dir}/linux/* ${temp_root_dir}/${linux_dir}/
-			rm -rf ${temp_root_dir}/${linux_dir}/linux
 			echo "pull linux ok"
 		fi
 	fi
@@ -511,7 +505,26 @@ if [ "${1}" = "burn_tf" ]; then
 
 sleep 1
 echo "Done!"
-
 fi
+
+if [ "${1}" = "burn_image" ]; then
+	echo "umounting sdcard..."
+	SDCARD="/dev/sda"
+	umount_all
+
+	echo "deleting all partitions..."
+	sudo wipefs -a -f $SDCARD
+	sudo dd if=/dev/zero of=$SDCARD bs=1M count=1
+
+	echo "creating partitions..."
+	sudo fdisk $SDCARD < sdcard_partition_image.txt
+	echo "formating partitions..."
+	sudo mkfs.ext4 -F ${SDCARD}1
+
+	sudo dd if=${temp_root_dir}/output/image/beaglebone_black_spi.img of=$SDCARD bs=1M count=1 conv=notrunc
+	sudo sync
+fi
+
+
 
 
