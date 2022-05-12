@@ -4,6 +4,7 @@
 
 #include "nokia5110.h"
 #include "m_spi.h"
+#include "m_gpio.h"
 
 struct nokia_5110 lcd = {
 	.cs_pin = "31",

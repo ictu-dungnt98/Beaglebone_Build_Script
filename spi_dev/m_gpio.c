@@ -40,7 +40,7 @@ void set_gpio_direction(char* gpio, char* direction)
 		exit(1);
 	}
 
-	if (write(fd, direction, strlen(direction) < 0)) {
+	if (write(fd, direction, strlen(direction)) < 0) {
 		printf("Failed to set GPIO direction: %s\n", strerror(errno));
 	}
 	
@@ -61,7 +61,7 @@ void set_gpio_value(char* gpio, char* value)
 		exit(1);
 	}
 
-	if (write(fd, value, strlen(value) < 0)) {
+	if (write(fd, value, strlen(value)) < 0) {
 		printf("Failed to set GPIO value: %s\n", strerror(errno));
 	}
 

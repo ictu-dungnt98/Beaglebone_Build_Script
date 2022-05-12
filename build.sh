@@ -54,7 +54,6 @@ pull_linux(){
 		echo "u-boot dir is exist"
 	else
 		# rm -rf ${temp_root_dir}/${linux_dir} &&\
-		cd ${temp_root_dir}/${linux_dir} &&\
 		git clone -b 4.14 https://github.com/beagleboard/linux.git ${linux_dir}
 
 		if [ ! -d ${temp_root_dir}/${linux_dir} ]; then
@@ -490,8 +489,8 @@ if [ "${1}" = "burn_tf" ]; then
 	sudo cp ${temp_root_dir}/${u_boot_boot_cmd_file} ${temp_root_dir}/output/p1/ &&\
 	echo "--->p1 done~"
 	sudo cp -rf ${temp_root_dir}/${rootfs_dir}/rootfs/* ${temp_root_dir}/output/p2/ &&\
-	sudo cp -rf ${temp_root_dir}/spi_driver/lcd_driver.ko ${temp_root_dir}/output/p2/ &&\
-	sudo cp -rf ${temp_root_dir}/spi_driver/test1/test1 ${temp_root_dir}/output/p2/ &&\
+	sudo cp -rf ${temp_root_dir}/spi_driver/lcd_driver.ko ${temp_root_dir}/output/p2/home/root &&\
+	sudo cp -rf ${temp_root_dir}/spi_driver/test1 ${temp_root_dir}/output/p2/home/root &&\
 	echo "--->p2 done~"
 
 	echo "--->The tf card image-packing task done~"
@@ -507,23 +506,6 @@ sleep 1
 echo "Done!"
 fi
 
-if [ "${1}" = "burn_image" ]; then
-	echo "umounting sdcard..."
-	SDCARD="/dev/sda"
-	umount_all
-
-	echo "deleting all partitions..."
-	sudo wipefs -a -f $SDCARD
-	sudo dd if=/dev/zero of=$SDCARD bs=1M count=1
-
-	echo "creating partitions..."
-	sudo fdisk $SDCARD < sdcard_partition_image.txt
-	echo "formating partitions..."
-	sudo mkfs.ext4 -F ${SDCARD}1
-
-	sudo dd if=${temp_root_dir}/output/image/beaglebone_black_spi.img of=$SDCARD bs=1M count=1 conv=notrunc
-	sudo sync
-fi
 
 
 
