@@ -513,6 +513,31 @@ sleep 1
 echo "Done!"
 fi
 
+if [ "${1}" = "burn_app" ]; then
+	echo "umounting sdcard..."
+	SDCARD="/dev/sda"
+	umount_all
+
+	mkdir -p ${temp_root_dir}/output/p2 > /dev/null 2>&1
+	sudo mount ${SDCARD}2 ${temp_root_dir}/output/p2
+
+	sudo cp -rf ${temp_root_dir}/spi_driver/lcd_driver.ko ${temp_root_dir}/output/p2/home/root &&\
+	sudo cp -rf ${temp_root_dir}/spi_driver/test1 ${temp_root_dir}/output/p2/home/root &&\
+	sudo cp -rf ${temp_root_dir}/spi_dev/spi_dev ${temp_root_dir}/output/p2/home/root &&\
+	echo "deploy app done"
+
+	sudo sync
+	sleep 2
+	sudo umount ${temp_root_dir}/output/p2
+	if [ $? -ne 0 ]; then
+		echo  "umount or losetup -d error!!"
+		exit
+	fi
+
+sleep 1
+echo "Done!"
+fi
+
 
 
 
