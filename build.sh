@@ -19,7 +19,7 @@ mlo_file="MLO"
 
 #linux opt=========================================================
 linux_dir="Beaglebone-linux"
-linux_config_file="bb.org_defconfig"
+linux_config_file="dungnt98_defconfig"
 dtb_file="am335x-boneblack.dtb"
 linux_file="uImage"
 #linux opt=========================================================
@@ -417,7 +417,7 @@ if [ "${1}" = "build_uboot" ]; then
 fi
 
 if [ "${1}" = "build_linux" ]; then
-	linux_config_file="bb.org_defconfig"
+	linux_config_file="dungnt98_defconfig"
 	build_linux
 fi
 
@@ -426,7 +426,10 @@ if [ "${1}" = "build_tf" ]; then
 	# cp -f ${temp_root_dir}/sun8i-v3s-licheepi-zero.dts ${temp_root_dir}/${linux_dir}/arch/arm/boot/dts/
     # cp -f ${temp_root_dir}/sun8i-v3s.dtsi ${temp_root_dir}/${linux_dir}/arch/arm/boot/dts/
 
-	linux_config_file="bb.org_defconfig"
+	cp -f ${temp_root_dir}/spi_dev/${linux_config_file} ${temp_root_dir}/${linux_dir}/arch/arm/configs/
+	cp -f ${temp_root_dir}/spi_dev/device-tree/* ${temp_root_dir}/${linux_dir}/arch/arm/boot/dts/
+
+	linux_config_file="dungnt98_defconfig"
 	u_boot_config_file="am335x_boneblack_vboot_defconfig"
 
 	build
