@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include "nokia5110.h"
 #include "m_spi.h"
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
                 draw_string("Trong Dung", Pixel_Set, FontSize_5x7);
                 break;
             case 2:
-                lcd_gotoxy(&lcd, 15, 10); 				
+				lcd_gotoxy(&lcd, 15, 10); 				
 				draw_string("Dungnt98 Linux", Pixel_Set, FontSize_5x7); 
 				break;
  			case 3: 				

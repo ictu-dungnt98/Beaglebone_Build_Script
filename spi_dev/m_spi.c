@@ -25,6 +25,8 @@
 #include <sys/stat.h>
 #include <linux/types.h>
 #include <linux/spi/spidev.h>
+#include <string.h>
+#include <errno.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -35,10 +37,10 @@ static void pabort(const char *s)
 }
 
 static const char *device = "/dev/spidev2.0";
-static uint32_t mode;
+static uint32_t mode = SPI_MODE_0; // SPI_MODE_0: cpol = cpha = 0
 static uint8_t bits = 8;
-static uint32_t speed = 500000;
-static uint16_t delay;
+static uint32_t speed = 10000000;
+static uint16_t delay = 0;
 static int fd;
 
 static void print_usage(const char *prog)
@@ -207,29 +209,32 @@ void spi_deinit()
 	close(fd);
 }
 
-static void spi_transfer(uint8_t *data, int length) {
-	struct spi_ioc_transfer spi[length];
-	int i;
+int transfer_byte(uint8_t send[], uint8_t receive[], int length) {
+	struct spi_ioc_transfer transfer;           //the transfer structure
 
-	/* Setup transfer struct */
-	for (i=0; i<length; i++) {
-		memset(&spi[i], 0, sizeof(struct spi_ioc_transfer));
-		spi[i].tx_buf = (unsigned long) (data+i);
-		spi[i].rx_buf = (unsigned long) (data+i);
-		spi[i].len = 1;
-		spi[i].speed_hz = speed;
-		spi[i].bits_per_word = bits;
-	}
+	memset(&transfer, 0, sizeof(struct spi_ioc_transfer));
 
-	/* Let's do the transfer */
-	if(ioctl(fd, SPI_IOC_MESSAGE(length), spi) < 0) {
-		perror("Error transfering data over SPI bus");
-		close(fd);
-		exit(-1);
+	transfer.tx_buf = (unsigned long) send;     //the buffer for sending data
+	transfer.rx_buf = (unsigned long) receive;  //the buffer for receiving data
+	transfer.len = length;                      //the length of buffer
+	transfer.speed_hz = 1000000;                //the speed in Hz
+	transfer.bits_per_word = 8;                 //bits per word
+	transfer.delay_usecs = 0;                   //delay in us
+
+	// send the SPI message (all of the above fields, inc. buffers)
+	int status = ioctl(fd, SPI_IOC_MESSAGE(1), &transfer);
+	if (status < 0) {
+		printf("SPI_IOC_MESSAGE Failed, %d - %s\n", errno, strerror(errno));
+		return -1;
 	}
+	return status;
 }
 
 void spi_write(uint8_t *tx, int len)
 {
-	spi_transfer(tx, len);
+	uint8_t null=0x00;
+
+	for (int i = 0; i < len; i++) {
+		transfer_byte(&tx[i], &null, 1);
+	}
 }
