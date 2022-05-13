@@ -349,6 +349,9 @@ pack_tf_normal_size_img(){
 	sudo cp ${temp_root_dir}/${u_boot_boot_cmd_file} ${temp_root_dir}/output/p1/ &&\
 	echo "--->p1 done~"
 	sudo cp -rf ${temp_root_dir}/${rootfs_dir}/rootfs/* ${temp_root_dir}/output/p2/ &&\
+	sudo cp -rf ${temp_root_dir}/spi_driver/lcd_driver.ko ${temp_root_dir}/output/p2/home/root &&\
+	sudo cp -rf ${temp_root_dir}/spi_driver/test1 ${temp_root_dir}/output/p2/home/root &&\
+	sudo cp -rf ${temp_root_dir}/spi_dev/spi_dev ${temp_root_dir}/output/p2/home/root &&\
 	echo "--->p2 done~"
 
 	if [ $? -ne 0 ]
@@ -494,6 +497,7 @@ if [ "${1}" = "burn_tf" ]; then
 	sudo cp -rf ${temp_root_dir}/${rootfs_dir}/rootfs/* ${temp_root_dir}/output/p2/ &&\
 	sudo cp -rf ${temp_root_dir}/spi_driver/lcd_driver.ko ${temp_root_dir}/output/p2/home/root &&\
 	sudo cp -rf ${temp_root_dir}/spi_driver/test1 ${temp_root_dir}/output/p2/home/root &&\
+	sudo cp -rf ${temp_root_dir}/spi_dev/spi_dev ${temp_root_dir}/output/p2/home/root &&\
 	echo "--->p2 done~"
 
 	echo "--->The tf card image-packing task done~"
