@@ -241,7 +241,7 @@ int lcd_init_io(struct nokia_5110 *lcd)
 	set_gpio_direction(lcd->dc_pin, "out");
 	set_gpio_direction(lcd->rs_pin, "out");
 
-	set_gpio_value(lcd->cs_pin, "1");
+	set_gpio_value(lcd->cs_pin, "0");
 	set_gpio_value(lcd->dc_pin, "1");
 	set_gpio_value(lcd->rs_pin, "1");
 }

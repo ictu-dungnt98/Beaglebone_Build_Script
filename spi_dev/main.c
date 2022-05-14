@@ -9,8 +9,8 @@
 
 struct nokia_5110 lcd = {
 	.cs_pin = "31",
-	.dc_pin = "30",
-	.rs_pin = "48",
+	.dc_pin = "48",
+	.rs_pin = "30",
 };
 
 void draw_string(char *str, Pixel_t color, FontSize_t font)
